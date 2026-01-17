@@ -1,0 +1,749 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mujoco model="science_laboratory">
+    
+    <!-- 编译器设置 -->
+    <compiler angle="radian" coordinate="local" inertiafromgeom="true"/>
+    
+    <!-- 仿真选项 -->
+    <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
+    
+    <!-- 视觉设置 -->
+    <visual>
+        <global offwidth="1920" offheight="1080"/>
+        <quality shadowsize="8192"/>
+        <map force="0.1" zfar="100"/>
+    </visual>
+    
+    <!-- 资源定义 - 纹理和材质 -->
+    <asset>
+        <!-- ===== 纹理定义 ===== -->
+        <texture name="floor_tex" type="2d" builtin="flat" rgb1="0.95 0.95 0.95" width="512" height="512"/>
+        <texture name="wall_tex" type="2d" builtin="flat" rgb1="0.92 0.92 0.92" width="512" height="512"/>
+        <texture name="metal_tex" type="2d" builtin="gradient" rgb1="0.78 0.78 0.80" rgb2="0.72 0.72 0.74" width="256" height="256"/>
+        
+        <!-- ===== 主要材质定义 ===== -->
+        
+        <!-- 房间结构 -->
+        <material name="floor_mat" texture="floor_tex" specular="0.25" shininess="0.15" reflectance="0"/>
+        <material name="wall_mat" texture="wall_tex" specular="0.12" shininess="0.08" reflectance="0"/>
+        
+        <!-- 实验台 -->
+        <material name="table_white_mat" rgba="0.96 0.96 0.96 1" specular="0.35" shininess="0.25" reflectance="0.05"/>
+        <material name="cabinet_bluegray_mat" rgba="0.78 0.82 0.86 1" specular="0.22" shininess="0.18" reflectance="0.02"/>
+        <material name="cabinet_darkgreen_mat" rgba="0.33 0.37 0.35 1" specular="0.18" shininess="0.12" reflectance="0"/>
+        <material name="cabinet_white_mat" rgba="0.90 0.90 0.90 1" specular="0.20" shininess="0.15" reflectance="0"/>
+        
+        <!-- ★★★ 橙色椅子 - 最重要的材质！★★★ -->
+        <material name="orange_chair_mat" rgba="0.95 0.52 0.27 1" specular="0.18" shininess="0.12" reflectance="0"/>
+        <material name="chair_base_mat" rgba="0.16 0.16 0.16 1" specular="0.35" shininess="0.25" reflectance="0.05"/>
+        
+        <!-- 金属设备 -->
+        <material name="metal_equipment_mat" texture="metal_tex" specular="0.65" shininess="0.55" reflectance="0.15"/>
+        <material name="stainless_steel_mat" rgba="0.78 0.78 0.80 1" specular="0.75" shininess="0.60" reflectance="0.20"/>
+        
+        <!-- 透明材质 -->
+        <material name="glass_clear_mat" rgba="0.94 0.94 0.96 0.42" specular="0.88" shininess="0.85" reflectance="0.12"/>
+        <material name="glass_equipment_mat" rgba="0.93 0.93 0.95 0.38" specular="0.80" shininess="0.75" reflectance="0.10"/>
+        
+        <!-- 液体材质 -->
+        <material name="liquid_blue_mat" rgba="0.39 0.59 0.86 0.78" specular="0.55" shininess="0.50" reflectance="0.08"/>
+        <material name="liquid_orange_mat" rgba="0.86 0.51 0.27 0.75" specular="0.52" shininess="0.48" reflectance="0.06"/>
+        
+        <!-- 塑料和其他 -->
+        <material name="plastic_white_mat" rgba="0.96 0.96 0.97 1" specular="0.28" shininess="0.22" reflectance="0"/>
+        <material name="display_black_mat" rgba="0.14 0.14 0.15 1" specular="0.42" shininess="0.38" reflectance="0.08"/>
+    </asset>
+    
+    <!-- 世界体 -->
+    <worldbody>
+        <!-- ===== 光照设置 ===== -->
+        <light name="main_light" pos="0.0 -4.0 20.0" dir="0 0.1 -1" diffuse="1.0 0.99 0.98" specular="0.35 0.35 0.35" castshadow="true" cutoff="60"/>
+        <light name="fill_light_1" pos="-16.0 12.0 16.0" dir="0.4 -0.3 -0.8" diffuse="0.35 0.35 0.38" specular="0.08 0.08 0.08" castshadow="false"/>
+        <light name="fill_light_2" pos="16.0 -12.0 16.0" dir="-0.4 0.3 -0.8" diffuse="0.32 0.32 0.35" specular="0.06 0.06 0.06" castshadow="false"/>
+        <light name="ambient_light" pos="0.0 0.0 24.0" dir="0 0 -1" diffuse="0.25 0.25 0.26" specular="0 0 0" castshadow="false"/>
+        
+        <!-- ===== 相机设置 - 等距视角 ===== -->
+        <camera name="isometric_main" pos="30.0 30.0 24.0" xyaxes="-0.707 0.707 0 -0.408 -0.408 0.816" fovy="45"/>
+        <camera name="front_view" pos="0.0 36.0 9.0" xyaxes="-1 0 0 0 0.2 0.98"/>
+        <camera name="top_view" pos="0.0 0.0 45.0" xyaxes="1 0 0 0 1 0"/>
+        <camera name="left_view" pos="-36.0 0.0 9.0" xyaxes="0 -1 0 0.2 0 0.98"/>
+        
+        <!-- ===== 房间结构 ===== -->
+        <!-- R01 - 地板 -->
+        <geom name="floor" type="box" size="16.0 12.0 0.2" pos="0.0 0.0 -0.2" material="floor_mat"/>
+        
+        <!-- R02 - 左墙 -->
+        <geom name="left_wall" type="box" size="0.3 12.0 6.0" pos="-16.0 0.0 6.0" material="wall_mat"/>
+        
+        <!-- R03 - 后墙 -->
+        <geom name="back_wall" type="box" size="16.0 0.3 6.0" pos="0.0 -12.0 6.0" material="wall_mat"/>
+        
+        <!-- R04 - 右墙 -->
+        <geom name="right_wall" type="box" size="0.3 12.0 6.0" pos="16.0 0.0 6.0" material="wall_mat"/>
+        
+        <!-- ===== 实验台 ===== -->
+        
+        <!-- T01 - 左后角实验台 -->
+        <body name="table_01" pos="-12.8 -9.6 0.0">
+            <!-- 台面 -->
+            <geom name="t01_top" type="box" size="3.2 1.4 0.1" pos="0.0 0.0 3.5" material="table_white_mat"/>
+            <!-- 台下柜体 - 深灰绿色 -->
+            <geom name="t01_cabinet" type="box" size="3.0 1.28 1.6" pos="0.0 0.0 1.6" material="cabinet_darkgreen_mat"/>
+            <!-- 柜门把手 -->
+            <geom name="t01_handle_l" type="box" size="0.24 0.04 0.04" pos="-1.2 1.32 2.4" rgba="0.7 0.7 0.72 1"/>
+            <geom name="t01_handle_r" type="box" size="0.24 0.04 0.04" pos="1.2 1.32 2.4" rgba="0.7 0.7 0.72 1"/>
+        </body>
+        
+        <!-- T02 - 左中部实验台(带水槽) -->
+        <body name="table_02" pos="-12.8 -3.2 0.0">
+            <!-- 台面 -->
+            <geom name="t02_top" type="box" size="2.8 1.4 0.1" pos="0.0 0.0 3.5" material="table_white_mat"/>
+            <!-- 台腿 (4根方柱) -->
+            <geom name="t02_leg_1" type="box" size="0.12 0.12 1.7" pos="-2.4 -1.2 1.7" material="table_white_mat"/>
+            <geom name="t02_leg_2" type="box" size="0.12 0.12 1.7" pos="-2.4 1.2 1.7" material="table_white_mat"/>
+            <geom name="t02_leg_3" type="box" size="0.12 0.12 1.7" pos="2.4 -1.2 1.7" material="table_white_mat"/>
+            <geom name="t02_leg_4" type="box" size="0.12 0.12 1.7" pos="2.4 1.2 1.7" material="table_white_mat"/>
+            <!-- 水槽 -->
+            <geom name="t02_sink" type="box" size="0.9 0.76 0.4" pos="1.2 0.0 3.08" material="stainless_steel_mat"/>
+            <!-- 水龙头 -->
+            <body name="faucet_02" pos="0.6 -0.6 3.68">
+                <geom name="faucet_base" type="cylinder" size="0.09 0.06" rgba="0.72 0.72 0.74 1"/>
+                <geom name="faucet_pipe" type="cylinder" size="0.044 0.3" pos="0.0 0.0 0.36" rgba="0.72 0.72 0.74 1"/>
+                <geom name="faucet_bend" type="box" size="0.16 0.044 0.044" pos="0.0 0.24 0.66" euler="0 0.7 0" rgba="0.72 0.72 0.74 1"/>
+            </body>
+        </body>
+        
+        <!-- T03 - 中央岛台 ★★★场景焦点★★★ -->
+        <body name="table_central" pos="0.0 -2.0 0.0">
+            <!-- 台面 -->
+            <geom name="t03_top" type="box" size="4.8 2.0 0.08" pos="0.0 0.0 3.68" material="table_white_mat"/>
+            <!-- 台下柜体 - ★浅蓝灰色★ -->
+            <geom name="t03_cabinet_main" type="box" size="4.6 1.8 1.64" pos="0.0 0.0 1.64" material="cabinet_bluegray_mat"/>
+            <!-- 柜门分隔线 -->
+            <geom name="t03_div_1" type="box" size="0.02 1.8 1.52" pos="-2.28 0.0 1.72" rgba="0.7 0.75 0.80 1"/>
+            <geom name="t03_div_2" type="box" size="0.02 1.8 1.52" pos="2.28 0.0 1.72" rgba="0.7 0.75 0.80 1"/>
+            <!-- 把手 -->
+            <geom name="t03_handle_1" type="box" size="0.24 0.04 0.04" pos="-3.2 1.84 2.4" rgba="0.7 0.7 0.72 1"/>
+            <geom name="t03_handle_2" type="box" size="0.24 0.04 0.04" pos="0.0 1.84 2.4" rgba="0.7 0.7 0.72 1"/>
+            <geom name="t03_handle_3" type="box" size="0.24 0.04 0.04" pos="3.2 1.84 2.4" rgba="0.7 0.7 0.72 1"/>
+            <!-- 柜脚 -->
+            <geom name="t03_foot_1" type="cylinder" size="0.06 0.1" pos="-4.0 -1.6 0.1" rgba="0.6 0.6 0.62 1"/>
+            <geom name="t03_foot_2" type="cylinder" size="0.06 0.1" pos="-4.0 1.6 0.1" rgba="0.6 0.6 0.62 1"/>
+            <geom name="t03_foot_3" type="cylinder" size="0.06 0.1" pos="4.0 -1.6 0.1" rgba="0.6 0.6 0.62 1"/>
+            <geom name="t03_foot_4" type="cylinder" size="0.06 0.1" pos="4.0 1.6 0.1" rgba="0.6 0.6 0.62 1"/>
+        </body>
+        
+        <!-- T04 - 后墙中部工作台(水槽区) -->
+        <body name="table_04" pos="2.0 -10.4 0.0">
+            <!-- 台面 -->
+            <geom name="t04_top" type="box" size="3.6 1.3 0.1" pos="0.0 0.0 3.5" material="table_white_mat"/>
+            <!-- 台下柜 -->
+            <geom name="t04_cabinet" type="box" size="3.4 1.2 1.6" pos="0.0 0.0 1.6" material="cabinet_white_mat"/>
+            <!-- 双槽水槽 -->
+            <geom name="t04_sink_left" type="box" size="0.56 0.76 0.5" pos="-0.6 0.0 3.28" material="stainless_steel_mat"/>
+            <geom name="t04_sink_right" type="box" size="0.56 0.76 0.5" pos="0.6 0.0 3.28" material="stainless_steel_mat"/>
+        </body>
+        
+        <!-- T05 - 右后角实验台(通风橱区) -->
+        <body name="table_05" pos="11.2 -9.6 0.0">
+            <!-- 台面 -->
+            <geom name="t05_top" type="box" size="3.6 1.4 0.1" pos="0.0 0.0 3.5" material="table_white_mat"/>
+            <!-- 台下柜 -->
+            <geom name="t05_cabinet" type="box" size="3.4 1.28 1.6" pos="0.0 0.0 1.6" material="cabinet_white_mat"/>
+        </body>
+        
+        <!-- T06 - 右墙实验台 -->
+        <body name="table_06" pos="13.2 1.2 0.0">
+            <!-- 台面 -->
+            <geom name="t06_top" type="box" size="2.8 1.3 0.1" pos="0.0 0.0 3.5" material="table_white_mat"/>
+            <!-- 台下柜 -->
+            <geom name="t06_cabinet" type="box" size="2.6 1.2 1.6" pos="0.0 0.0 1.6" material="cabinet_white_mat"/>
+            <!-- 小水槽 -->
+            <geom name="t06_sink" type="box" size="0.7 0.6 0.3" pos="1.8 0.0 3.28" material="stainless_steel_mat"/>
+        </body>
+        
+        <!-- T07 - 右前方电脑工作台 -->
+        <body name="table_computer" pos="8.8 7.2 0.0">
+            <!-- 台面 -->
+            <geom name="t07_top" type="box" size="2.4 1.2 0.06" pos="0.0 0.0 2.94" material="table_white_mat"/>
+            <!-- 细金属腿 (4根) -->
+            <geom name="t07_leg_1" type="cylinder" size="0.05 1.44" pos="-2.0 -1.0 1.44" rgba="0.7 0.7 0.72 1"/>
+            <geom name="t07_leg_2" type="cylinder" size="0.05 1.44" pos="-2.0 1.0 1.44" rgba="0.7 0.7 0.72 1"/>
+            <geom name="t07_leg_3" type="cylinder" size="0.05 1.44" pos="2.0 -1.0 1.44" rgba="0.7 0.7 0.72 1"/>
+            <geom name="t07_leg_4" type="cylinder" size="0.05 1.44" pos="2.0 1.0 1.44" rgba="0.7 0.7 0.72 1"/>
+        </body>
+        
+        <!-- T08 - 中前方小型工作台 -->
+        <body name="table_08" pos="3.2 6.0 0.0">
+            <!-- 台面 -->
+            <geom name="t08_top" type="box" size="2.0 1.2 0.08" pos="0.0 0.0 3.52" material="table_white_mat"/>
+            <!-- 台腿 -->
+            <geom name="t08_leg_1" type="box" size="0.12 0.12 1.72" pos="-1.8 -1.0 1.72" material="table_white_mat"/>
+            <geom name="t08_leg_2" type="box" size="0.12 0.12 1.72" pos="-1.8 1.0 1.72" material="table_white_mat"/>
+            <geom name="t08_leg_3" type="box" size="0.12 0.12 1.72" pos="1.8 -1.0 1.72" material="table_white_mat"/>
+            <geom name="t08_leg_4" type="box" size="0.12 0.12 1.72" pos="1.8 1.0 1.72" material="table_white_mat"/>
+        </body>
+        
+        <!-- ===== 储物架 ===== -->
+        
+        <!-- C01 - 左墙上层架 ★★★与右墙架子对称★★★ -->
+        <body name="shelf_left_upper" pos="-15.3 0.0 6.0">
+            <!-- 架子支架 -->
+            <geom name="c01_bracket_l" type="box" size="0.06 0.56 1.1" pos="0.0 -4.4 1.1" rgba="0.75 0.75 0.77 1"/>
+            <geom name="c01_bracket_r" type="box" size="0.06 0.56 1.1" pos="0.0 4.4 1.1" rgba="0.75 0.75 0.77 1"/>
+            <!-- 层板 - 沿y方向延伸，与右墙架子一致 -->
+            <geom name="c01_shelf_1" type="box" size="0.56 8.8 0.036" pos="0.52 0.0 0.4" material="table_white_mat"/>
+            <geom name="c01_shelf_2" type="box" size="0.56 8.8 0.036" pos="0.52 0.0 1.2" material="table_white_mat"/>
+            <geom name="c01_shelf_3" type="box" size="0.56 8.8 0.036" pos="0.52 0.0 2.0" material="table_white_mat"/>
+            <!-- 物品 - 与右墙架子对称 -->
+            <geom name="c01_item_1" type="cylinder" size="0.12 0.24" pos="0.6 -3.2 2.24" material="plastic_white_mat"/>
+            <geom name="c01_item_2" type="cylinder" size="0.1 0.22" pos="0.6 -1.6 2.22" rgba="0.85 0.85 0.87 1"/>
+            <geom name="c01_item_3" type="cylinder" size="0.112 0.2" pos="0.6 0.0 2.2" material="plastic_white_mat"/>
+            <geom name="c01_item_4" type="cylinder" size="0.104 0.24" pos="0.6 1.6 2.24" material="glass_clear_mat"/>
+        </body>
+        
+        <!-- C04 - 后墙长架 ★★★主要存储区★★★ -->
+        <body name="shelf_back_wall" pos="2.0 -11.2 5.6">
+            <!-- 支架 -->
+            <geom name="c04_frame_l" type="box" size="0.1 0.5 2.2" pos="-10.0 0.5 2.2" rgba="0.8 0.8 0.82 1"/>
+            <geom name="c04_frame_c" type="box" size="0.1 0.5 2.2" pos="0.0 0.5 2.2" rgba="0.8 0.8 0.82 1"/>
+            <geom name="c04_frame_r" type="box" size="0.1 0.5 2.2" pos="10.0 0.5 2.2" rgba="0.8 0.8 0.82 1"/>
+            
+            <!-- 4层层板 -->
+            <geom name="c04_shelf_1" type="box" size="11.0 0.5 0.04" pos="0.0 0.5 1.0" material="table_white_mat"/>
+            <geom name="c04_shelf_2" type="box" size="11.0 0.5 0.04" pos="0.0 0.5 2.0" material="table_white_mat"/>
+            <geom name="c04_shelf_3" type="box" size="11.0 0.5 0.04" pos="0.0 0.5 3.0" material="table_white_mat"/>
+            <geom name="c04_shelf_4" type="box" size="11.0 0.5 0.04" pos="0.0 0.5 4.0" material="table_white_mat"/>
+            
+            <!-- 层板上的物品 (简化表示) -->
+            <!-- 第4层 -->
+            <geom name="c04_item_4_1" type="cylinder" size="0.24 0.36" pos="-7.2 0.5 4.76" material="plastic_white_mat"/>
+            <geom name="c04_item_4_2" type="box" size="0.3 0.18 0.24" pos="-5.6 0.5 4.64" material="plastic_white_mat"/>
+            <geom name="c04_item_4_3" type="cylinder" size="0.16 0.28" pos="-4.0 0.5 4.68" rgba="0.88 0.88 0.88 1"/>
+            <geom name="c04_item_4_4" type="cylinder" size="0.16 0.28" pos="-2.4 0.5 4.68" rgba="0.88 0.88 0.88 1"/>
+            <geom name="c04_item_4_5" type="box" size="0.32 0.18 0.2" pos="-0.8 0.5 4.6" rgba="0.85 0.85 0.85 1"/>
+            
+            <!-- 第3层 - 包含黑色显示器 -->
+            <geom name="c04_item_3_1" type="cylinder" size="0.14 0.3" pos="-6.0 0.5 3.5" material="glass_clear_mat"/>
+            <geom name="c04_item_3_2" type="cylinder" size="0.12 0.26" pos="-4.0 0.5 3.46" rgba="0.6 0.45 0.35 0.7"/>
+            <!-- ★黑色显示器/仪器★ -->
+            <geom name="c04_display" type="box" size="0.56 0.12 0.44" pos="0.0 0.5 3.44" material="display_black_mat"/>
+            <geom name="c04_item_3_4" type="cylinder" size="0.14 0.28" pos="2.0 0.5 3.48" material="glass_clear_mat"/>
+            <geom name="c04_item_3_5" type="cylinder" size="0.12 0.24" pos="4.0 0.5 3.44" material="plastic_white_mat"/>
+            
+            <!-- 第2层 - 密集瓶罐 -->
+            <geom name="c04_item_2_1" type="cylinder" size="0.1 0.28" pos="-8.0 0.5 2.48" rgba="0.88 0.88 0.88 1"/>
+            <geom name="c04_item_2_2" type="cylinder" size="0.12 0.26" pos="-6.8 0.5 2.46" material="glass_clear_mat"/>
+            <geom name="c04_item_2_3" type="cylinder" size="0.112 0.24" pos="-5.6 0.5 2.44" material="plastic_white_mat"/>
+            <geom name="c04_item_2_4" type="cylinder" size="0.1 0.28" pos="-4.4 0.5 2.48" rgba="0.85 0.85 0.87 1"/>
+            <geom name="c04_item_2_5" type="cylinder" size="0.12 0.26" pos="-3.2 0.5 2.46" material="glass_clear_mat"/>
+            <geom name="c04_item_2_6" type="cylinder" size="0.108 0.22" pos="-2.0 0.5 2.42" material="plastic_white_mat"/>
+            <geom name="c04_item_2_7" type="cylinder" size="0.1 0.24" pos="-0.8 0.5 2.44" rgba="0.88 0.88 0.88 1"/>
+            <geom name="c04_item_2_8" type="cylinder" size="0.112 0.26" pos="0.4 0.5 2.46" material="glass_clear_mat"/>
+            <geom name="c04_item_2_9" type="cylinder" size="0.104 0.22" pos="1.6 0.5 2.42" material="plastic_white_mat"/>
+            
+            <!-- 第1层 -->
+            <geom name="c04_item_1_1" type="box" size="0.24 0.18 0.24" pos="-7.2 0.5 1.44" rgba="0.88 0.88 0.88 1"/>
+            <geom name="c04_item_1_2" type="cylinder" size="0.16 0.32" pos="-5.6 0.5 1.52" material="plastic_white_mat"/>
+            <geom name="c04_item_1_3" type="cylinder" size="0.14 0.3" pos="-4.0 0.5 1.5" material="glass_clear_mat"/>
+        </body>
+        
+        <!-- C06 - 右墙上方架 -->
+        <body name="shelf_right_upper" pos="15.3 0.0 6.0">
+            <!-- 架子支架 -->
+            <geom name="c06_bracket_l" type="box" size="0.06 0.56 1.1" pos="0.0 -4.4 1.1" rgba="0.75 0.75 0.77 1"/>
+            <geom name="c06_bracket_r" type="box" size="0.06 0.56 1.1" pos="0.0 4.4 1.1" rgba="0.75 0.75 0.77 1"/>
+            <!-- 层板 -->
+            <geom name="c06_shelf_1" type="box" size="0.56 8.8 0.036" pos="-0.52 0.0 0.4" material="table_white_mat"/>
+            <geom name="c06_shelf_2" type="box" size="0.56 8.8 0.036" pos="-0.52 0.0 1.2" material="table_white_mat"/>
+            <geom name="c06_shelf_3" type="box" size="0.56 8.8 0.036" pos="-0.52 0.0 2.0" material="table_white_mat"/>
+            <!-- 物品 -->
+            <geom name="c06_item_1" type="cylinder" size="0.12 0.24" pos="-0.6 -3.2 2.24" material="plastic_white_mat"/>
+            <geom name="c06_item_2" type="cylinder" size="0.1 0.22" pos="-0.6 -1.6 2.22" rgba="0.85 0.85 0.87 1"/>
+            <geom name="c06_item_3" type="cylinder" size="0.112 0.2" pos="-0.6 0.0 2.2" material="plastic_white_mat"/>
+            <geom name="c06_item_4" type="cylinder" size="0.104 0.24" pos="-0.6 1.6 2.24" material="glass_clear_mat"/>
+        </body>
+        
+        <!-- ===== 实验设备 ===== -->
+        
+        <!-- E01 - 大型分析仪器/离心机 ★★★场景核心设备★★★ -->
+        <body name="equipment_centrifuge_large" pos="-6.0 -4.8 0.0">
+            <!-- 底座基座 -->
+            <geom name="e01_base" type="box" size="1.3 1.1 0.16" pos="0.0 0.0 0.16" rgba="0.35 0.35 0.38 1"/>
+            <!-- 脚垫 -->
+            <geom name="e01_foot_1" type="cylinder" size="0.06 0.06" pos="-1.12 -0.92 0.06" rgba="0.3 0.3 0.32 1"/>
+            <geom name="e01_foot_2" type="cylinder" size="0.06 0.06" pos="-1.12 0.92 0.06" rgba="0.3 0.3 0.32 1"/>
+            <geom name="e01_foot_3" type="cylinder" size="0.06 0.06" pos="1.12 -0.92 0.06" rgba="0.3 0.3 0.32 1"/>
+            <geom name="e01_foot_4" type="cylinder" size="0.06 0.06" pos="1.12 0.92 0.06" rgba="0.3 0.3 0.32 1"/>
+            <!-- 下部柜体 -->
+            <geom name="e01_lower_cabinet" type="box" size="1.2 1.0 0.9" pos="0.0 0.0 1.22" rgba="0.88 0.88 0.90 1"/>
+            <!-- 中部主体(离心腔) - 圆柱形 -->
+            <geom name="e01_chamber" type="cylinder" size="1.0 0.9" pos="0.0 0.0 3.03" material="metal_equipment_mat"/>
+            <!-- 顶盖 -->
+            <body name="e01_lid" pos="0.0 0.0 3.93">
+                <joint name="e01_lid_hinge" type="hinge" axis="1 0 0" pos="0.0 0.96 0.0" range="0.0 3.14" damping="1.5"/>
+                <geom name="e01_lid_cover" type="cylinder" size="1.04 0.12" material="metal_equipment_mat"/>
+                <!-- 观察窗 -->
+                <geom name="e01_window" type="cylinder" size="0.3 0.124" rgba="0.93 0.93 0.95 0.4"/>
+            </body>
+            <!-- 控制面板 -->
+            <geom name="e01_panel_bg" type="box" size="0.4 0.06 0.16" pos="0.0 1.04 3.04" rgba="0.35 0.35 0.38 1"/>
+            <geom name="e01_display" type="box" size="0.24 0.04 0.1" pos="0.0 1.1 3.08" rgba="0.2 0.6 0.9 1"/>
+            <geom name="e01_button_1" type="cylinder" size="0.032 0.02" pos="-0.16 1.1 2.96" rgba="0.15 0.15 0.15 1"/>
+            <geom name="e01_button_2" type="cylinder" size="0.032 0.02" pos="0.16 1.1 2.96" rgba="0.15 0.15 0.15 1"/>
+        </body>
+        
+        <!-- E03 - 超净工作台 ★★★左前方焦点★★★ -->
+        <body name="equipment_clean_bench" pos="-11.2 4.8 0.0">
+            <!-- 底座/台下柜体 - ★浅蓝灰色★ -->
+            <geom name="e03_cabinet_main" type="box" size="2.8 1.4 1.64" pos="0.0 0.0 1.64" material="cabinet_bluegray_mat"/>
+            <!-- 柜门分隔 -->
+            <geom name="e03_door_div" type="box" size="0.02 1.4 1.52" pos="0.0 0.0 1.72" rgba="0.7 0.75 0.80 1"/>
+            <!-- 把手 -->
+            <geom name="e03_handle_l" type="box" size="0.2 0.04 0.04" pos="-1.4 1.44 2.2" rgba="0.7 0.7 0.72 1"/>
+            <geom name="e03_handle_r" type="box" size="0.2 0.04 0.04" pos="1.4 1.44 2.2" rgba="0.7 0.7 0.72 1"/>
+            <!-- 支脚 -->
+            <geom name="e03_foot_1" type="cylinder" size="0.06 0.1" pos="-2.48 -1.28 0.1" rgba="0.6 0.6 0.62 1"/>
+            <geom name="e03_foot_2" type="cylinder" size="0.06 0.1" pos="-2.48 1.28 0.1" rgba="0.6 0.6 0.62 1"/>
+            <geom name="e03_foot_3" type="cylinder" size="0.06 0.1" pos="2.48 -1.28 0.1" rgba="0.6 0.6 0.62 1"/>
+            <geom name="e03_foot_4" type="cylinder" size="0.06 0.1" pos="2.48 1.28 0.1" rgba="0.6 0.6 0.62 1"/>
+            
+            <!-- 工作台面 -->
+            <geom name="e03_worktop" type="box" size="2.84 1.4 0.06" pos="0.0 0.0 3.34" material="table_white_mat"/>
+            
+            <!-- 操作舱框架 -->
+            <!-- 顶部 -->
+            <geom name="e03_top_panel" type="box" size="2.84 1.4 0.06" pos="0.0 0.0 5.68" material="table_white_mat"/>
+            <!-- 侧面 -->
+            <geom name="e03_side_l" type="box" size="0.04 1.4 1.1" pos="-2.84 0.0 4.46" material="table_white_mat"/>
+            <geom name="e03_side_r" type="box" size="0.04 1.4 1.1" pos="2.84 0.0 4.46" material="table_white_mat"/>
+            <!-- 后面 -->
+            <geom name="e03_back" type="box" size="2.84 0.04 1.1" pos="0.0 -1.4 4.46" material="table_white_mat"/>
+            
+            <!-- 透明前挡板 -->
+            <body name="e03_glass_door" pos="0.0 1.44 4.46">
+                <joint name="e03_door_slide" type="slide" axis="0 0 1" range="0.0 0.6" damping="2"/>
+                <geom name="e03_glass" type="box" size="2.7 0.04 0.9" material="glass_equipment_mat"/>
+                <!-- 玻璃边框 -->
+                <geom name="e03_frame_top" type="box" size="2.76 0.05 0.04" pos="0.0 0.0 0.94" rgba="0.7 0.7 0.72 1"/>
+                <geom name="e03_frame_bottom" type="box" size="2.76 0.05 0.04" pos="0.0 0.0 -0.94" rgba="0.7 0.7 0.72 1"/>
+            </body>
+            
+            <!-- 内部照明 (表示为发光条) -->
+            <geom name="e03_light" type="box" size="2.6 0.08 0.04" pos="0.0 0.0 5.6" rgba="1 1 0.98 0.8"/>
+        </body>
+        
+        <!-- E06 - 通风橱 ★★★右后角重要设备★★★ -->
+        <body name="equipment_fume_hood" pos="11.2 -9.6 3.6">
+            <!-- 通风橱框架 -->
+            <geom name="e06_frame" type="box" size="2.9 1.5 2.5" pos="0.0 0.0 2.5" material="table_white_mat"/>
+            <!-- 工作台面 -->
+            <geom name="e06_worktop" type="box" size="2.8 1.4 0.06" pos="0.0 0.0 0.06" material="table_white_mat"/>
+            
+            <!-- 侧壁 -->
+            <geom name="e06_side_l" type="box" size="0.04 1.4 2.4" pos="-2.86 0.0 2.4" material="table_white_mat"/>
+            <geom name="e06_side_r" type="box" size="0.04 1.4 2.4" pos="2.86 0.0 2.4" material="table_white_mat"/>
+            <!-- 后壁 -->
+            <geom name="e06_back" type="box" size="2.9 0.04 2.4" pos="0.0 -1.46 2.4" material="table_white_mat"/>
+            <!-- 顶部 -->
+            <geom name="e06_top" type="box" size="2.9 1.5 0.1" pos="0.0 0.0 4.9" material="table_white_mat"/>
+            
+            <!-- 透明前挡板(可滑动) -->
+            <body name="e06_sash" pos="0.0 1.54 2.4">
+                <joint name="e06_sash_slide" type="slide" axis="0 0 1" range="0.0 0.8" damping="3"/>
+                <geom name="e06_glass" type="box" size="2.7 0.04 1.6" material="glass_equipment_mat"/>
+                <!-- 边框 -->
+                <geom name="e06_frame_l" type="box" size="0.05 0.05 1.64" pos="-2.75 0.0 0.0" rgba="0.7 0.7 0.72 1"/>
+                <geom name="e06_frame_r" type="box" size="0.05 0.05 1.64" pos="2.75 0.0 0.0" rgba="0.7 0.7 0.72 1"/>
+            </body>
+            
+            <!-- 控制面板 (左侧) -->
+            <geom name="e06_control_panel" type="box" size="0.3 0.04 0.4" pos="-3.2 1.48 1.2" rgba="0.35 0.35 0.38 1"/>
+            <geom name="e06_display" type="box" size="0.16 0.02 0.08" pos="-3.2 1.52 1.4" rgba="0.2 0.6 0.9 1"/>
+            
+            <!-- 排风管道 -->
+            <geom name="e06_duct" type="cylinder" size="0.3 1.4" pos="0.0 -1.2 6.4" rgba="0.82 0.82 0.84 1"/>
+            
+            <!-- 内部照明 -->
+            <geom name="e06_light" type="box" size="2.6 0.12 0.04" pos="0.0 0.0 4.76" rgba="1 1 0.98 0.75"/>
+        </body>
+        
+        <!-- E04 - 显微镜 -->
+        <body name="equipment_microscope" pos="-1.2 -1.2 3.8">
+            <!-- 底座 -->
+            <geom name="e04_base" type="box" size="0.4 0.3 0.08" pos="0.0 0.0 0.04" material="display_black_mat"/>
+            <!-- C形支柱 -->
+            <geom name="e04_pillar" type="box" size="0.04 0.07 0.7" pos="0.12 0.0 0.48" material="display_black_mat"/>
+            <!-- 支臂 -->
+            <geom name="e04_arm" type="box" size="0.16 0.06 0.04" pos="0.04 0.0 1.0" material="display_black_mat"/>
+            <!-- 镜筒 -->
+            <body name="e04_tube" pos="0.0 0.0 1.2">
+                <joint name="e04_focus" type="slide" axis="0 0 1" range="-0.1 0.1" damping="2"/>
+                <geom name="e04_tube_main" type="cylinder" size="0.08 0.3" euler="1.57 0 0" material="display_black_mat"/>
+                <!-- 目镜 -->
+                <geom name="e04_eyepiece" type="cylinder" size="0.07 0.12" pos="0.0 -0.36 0.0" euler="1.57 0 0" material="display_black_mat"/>
+            </body>
+            <!-- 载物台 -->
+            <geom name="e04_stage" type="box" size="0.2 0.2 0.02" pos="0.0 0.0 0.32" rgba="0.3 0.3 0.3 1"/>
+        </body>
+        
+        <!-- E05 - 分析天平 -->
+        <body name="equipment_balance" pos="2.0 -1.2 3.8">
+            <!-- 主体 -->
+            <geom name="e05_body" type="box" size="0.5 0.44 0.6" pos="0.0 0.0 0.6" material="table_white_mat"/>
+            <!-- 显示屏 -->
+            <geom name="e05_display" type="box" size="0.24 0.02 0.08" pos="0.0 0.46 1.0" rgba="0.2 0.8 0.3 1"/>
+            <!-- 称重盘 -->
+            <geom name="e05_pan" type="cylinder" size="0.2 0.02" pos="0.0 0.0 1.24" rgba="0.75 0.75 0.77 1"/>
+            
+            <!-- 玻璃防风罩 -->
+            <geom name="e05_glass_front" type="box" size="0.44 0.02 0.5" pos="0.0 0.42 0.94" material="glass_clear_mat"/>
+            <geom name="e05_glass_back" type="box" size="0.44 0.02 0.5" pos="0.0 -0.42 0.94" material="glass_clear_mat"/>
+            <geom name="e05_glass_left" type="box" size="0.02 0.44 0.5" pos="-0.44 0.0 0.94" material="glass_clear_mat"/>
+            <geom name="e05_glass_right" type="box" size="0.02 0.44 0.5" pos="0.44 0.0 0.94" material="glass_clear_mat"/>
+            <geom name="e05_glass_top" type="box" size="0.44 0.44 0.02" pos="0.0 0.0 1.44" material="glass_clear_mat"/>
+        </body>
+        
+        <!-- E07 - 小型台式离心机 -->
+        <body name="equipment_centrifuge_small" pos="12.4 1.6 3.8">
+            <!-- 主体 -->
+            <geom name="e07_body" type="cylinder" size="0.5 0.44" material="table_white_mat"/>
+            <!-- 顶盖 -->
+            <geom name="e07_lid" type="cylinder" size="0.52 0.06" pos="0.0 0.0 0.5" rgba="0.85 0.85 0.87 1"/>
+            <!-- 控制面板 -->
+            <geom name="e07_panel" type="box" size="0.32 0.04 0.12" pos="0.0 0.54 0.24" rgba="0.35 0.35 0.38 1"/>
+        </body>
+        
+        <!-- E08 - 磁力搅拌器 -->
+        <body name="equipment_stirrer" pos="-12.0 -2.4 3.8">
+            <!-- 底座 -->
+            <geom name="e08_base" type="box" size="0.4 0.4 0.16" pos="0.0 0.0 0.16" rgba="0.85 0.85 0.85 1"/>
+            <!-- 搅拌平台 -->
+            <geom name="e08_platform" type="cylinder" size="0.32 0.032" pos="0.0 0.0 0.352" rgba="0.9 0.9 0.9 1"/>
+            <!-- 控制旋钮 -->
+            <geom name="e08_knob" type="cylinder" size="0.06 0.04" pos="-0.24 0.0 0.4" rgba="0.3 0.3 0.3 1"/>
+        </body>
+        
+        <!-- E10 - 后墙大型白色设备(培养箱) -->
+        <body name="equipment_incubator" pos="7.2 -10.0 0.0">
+            <!-- 主体 -->
+            <geom name="e10_body" type="box" size="1.4 1.2 3.2" pos="0.0 0.0 3.2" material="table_white_mat"/>
+            <!-- 玻璃门 -->
+            <geom name="e10_door_glass" type="box" size="1.12 0.08 2.6" pos="0.0 1.28 3.2" material="glass_equipment_mat"/>
+            <!-- 门框 -->
+            <geom name="e10_door_frame" type="box" size="1.28 0.1 0.02" pos="0.0 1.3 1.88" rgba="0.85 0.85 0.85 1"/>
+            <geom name="e10_door_frame_top" type="box" size="1.28 0.1 0.02" pos="0.0 1.3 4.52" rgba="0.85 0.85 0.85 1"/>
+            <!-- 把手 -->
+            <geom name="e10_handle" type="cylinder" size="0.032 0.24" pos="1.0 1.44 3.2" euler="0 1.57 0" rgba="0.6 0.6 0.62 1"/>
+        </body>
+        
+        <!-- ===== 橙色椅子 ★★★★★ 最重要的视觉元素！★★★★★ ===== -->
+        
+        <!-- CH01 - 椅子1 (大型分析仪旁) -->
+        <body name="chair_01" pos="-3.2 -7.2 0.0">
+            <!-- 五星底座 -->
+            <geom name="ch01_base" type="cylinder" size="1.0 0.06" pos="0.0 0.0 0.06" material="chair_base_mat"/>
+            <!-- 辐条 (5个) -->
+            <geom name="ch01_spoke_1" type="box" size="0.8 0.06 0.03" pos="0.4 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch01_spoke_2" type="box" size="0.8 0.06 0.03" pos="-0.248 0.7 0.06" euler="0 0 1.257" material="chair_base_mat"/>
+            <geom name="ch01_spoke_3" type="box" size="0.8 0.06 0.03" pos="-0.648 0.472 0.06" euler="0 0 2.513" material="chair_base_mat"/>
+            <geom name="ch01_spoke_4" type="box" size="0.8 0.06 0.03" pos="-0.648 -0.472 0.06" euler="0 0 3.77" material="chair_base_mat"/>
+            <geom name="ch01_spoke_5" type="box" size="0.8 0.06 0.03" pos="-0.248 -0.7 0.06" euler="0 0 5.026" material="chair_base_mat"/>
+            <!-- 脚轮 (5个) -->
+            <geom name="ch01_wheel_1" type="sphere" size="0.1" pos="0.88 0.0 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch01_wheel_2" type="sphere" size="0.1" pos="-0.272 0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch01_wheel_3" type="sphere" size="0.1" pos="-0.712 0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch01_wheel_4" type="sphere" size="0.1" pos="-0.712 -0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch01_wheel_5" type="sphere" size="0.1" pos="-0.272 -0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            
+            <!-- 气压升降杆 -->
+            <body name="ch01_lift" pos="0.0 0.0 0.2">
+                <joint name="ch01_height" type="slide" axis="0 0 1" range="0.0 0.3" damping="5"/>
+                <geom name="ch01_gas_cylinder" type="cylinder" size="0.1 0.7" pos="0.0 0.0 0.7" material="chair_base_mat"/>
+                
+                <!-- 座椅主体 -->
+                <body name="ch01_seat_body" pos="0.0 0.0 1.4">
+                    <joint name="ch01_rotate" type="hinge" axis="0 0 1" damping="0.5"/>
+                    <!-- ★★★坐垫 - 明亮橙色★★★ -->
+                    <geom name="ch01_seat" type="cylinder" size="0.8 0.16" pos="0.0 0.0 0.16" material="orange_chair_mat"/>
+                    <!-- ★★★靠背 - 明亮橙色★★★ -->
+                    <geom name="ch01_backrest" type="box" size="0.7 0.08 0.6" pos="0.0 -0.72 0.92" euler="0.15 0 0" material="orange_chair_mat"/>
+                    <!-- 靠背支架 -->
+                    <geom name="ch01_back_support" type="cylinder" size="0.04 0.48" pos="0.0 -0.64 0.48" euler="0.2 0 0" material="chair_base_mat"/>
+                </body>
+            </body>
+        </body>
+        
+        <!-- CH02 - 椅子2 (中央岛台后侧) -->
+        <body name="chair_02" pos="1.2 -4.8 0.0">
+            <geom name="ch02_base" type="cylinder" size="1.0 0.06" pos="0.0 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch02_spoke_1" type="box" size="0.8 0.06 0.03" pos="0.4 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch02_spoke_2" type="box" size="0.8 0.06 0.03" pos="-0.248 0.7 0.06" euler="0 0 1.257" material="chair_base_mat"/>
+            <geom name="ch02_spoke_3" type="box" size="0.8 0.06 0.03" pos="-0.648 0.472 0.06" euler="0 0 2.513" material="chair_base_mat"/>
+            <geom name="ch02_spoke_4" type="box" size="0.8 0.06 0.03" pos="-0.648 -0.472 0.06" euler="0 0 3.77" material="chair_base_mat"/>
+            <geom name="ch02_spoke_5" type="box" size="0.8 0.06 0.03" pos="-0.248 -0.7 0.06" euler="0 0 5.026" material="chair_base_mat"/>
+            <geom name="ch02_wheel_1" type="sphere" size="0.1" pos="0.88 0.0 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch02_wheel_2" type="sphere" size="0.1" pos="-0.272 0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch02_wheel_3" type="sphere" size="0.1" pos="-0.712 0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch02_wheel_4" type="sphere" size="0.1" pos="-0.712 -0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch02_wheel_5" type="sphere" size="0.1" pos="-0.272 -0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <body name="ch02_lift" pos="0.0 0.0 0.2">
+                <joint name="ch02_height" type="slide" axis="0 0 1" range="0.0 0.3" damping="5"/>
+                <geom name="ch02_gas_cylinder" type="cylinder" size="0.1 0.7" pos="0.0 0.0 0.7" material="chair_base_mat"/>
+                <body name="ch02_seat_body" pos="0.0 0.0 1.4">
+                    <joint name="ch02_rotate" type="hinge" axis="0 0 1" damping="0.5"/>
+                    <geom name="ch02_seat" type="cylinder" size="0.8 0.16" pos="0.0 0.0 0.16" material="orange_chair_mat"/>
+                    <geom name="ch02_backrest" type="box" size="0.7 0.08 0.6" pos="0.0 -0.72 0.92" euler="0.15 0 0" material="orange_chair_mat"/>
+                    <geom name="ch02_back_support" type="cylinder" size="0.04 0.48" pos="0.0 -0.64 0.48" euler="0.2 0 0" material="chair_base_mat"/>
+                </body>
+            </body>
+        </body>
+        
+        <!-- CH03 - 椅子3 (中前方小工作台旁) -->
+        <body name="chair_03" pos="2.4 4.8 0.0">
+            <geom name="ch03_base" type="cylinder" size="1.0 0.06" pos="0.0 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch03_spoke_1" type="box" size="0.8 0.06 0.03" pos="0.4 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch03_spoke_2" type="box" size="0.8 0.06 0.03" pos="-0.248 0.7 0.06" euler="0 0 1.257" material="chair_base_mat"/>
+            <geom name="ch03_spoke_3" type="box" size="0.8 0.06 0.03" pos="-0.648 0.472 0.06" euler="0 0 2.513" material="chair_base_mat"/>
+            <geom name="ch03_spoke_4" type="box" size="0.8 0.06 0.03" pos="-0.648 -0.472 0.06" euler="0 0 3.77" material="chair_base_mat"/>
+            <geom name="ch03_spoke_5" type="box" size="0.8 0.06 0.03" pos="-0.248 -0.7 0.06" euler="0 0 5.026" material="chair_base_mat"/>
+            <geom name="ch03_wheel_1" type="sphere" size="0.1" pos="0.88 0.0 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch03_wheel_2" type="sphere" size="0.1" pos="-0.272 0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch03_wheel_3" type="sphere" size="0.1" pos="-0.712 0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch03_wheel_4" type="sphere" size="0.1" pos="-0.712 -0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch03_wheel_5" type="sphere" size="0.1" pos="-0.272 -0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <body name="ch03_lift" pos="0.0 0.0 0.2">
+                <joint name="ch03_height" type="slide" axis="0 0 1" range="0.0 0.3" damping="5"/>
+                <geom name="ch03_gas_cylinder" type="cylinder" size="0.1 0.7" pos="0.0 0.0 0.7" material="chair_base_mat"/>
+                <body name="ch03_seat_body" pos="0.0 0.0 1.4">
+                    <joint name="ch03_rotate" type="hinge" axis="0 0 1" damping="0.5"/>
+                    <geom name="ch03_seat" type="cylinder" size="0.8 0.16" pos="0.0 0.0 0.16" material="orange_chair_mat"/>
+                    <geom name="ch03_backrest" type="box" size="0.7 0.08 0.6" pos="0.0 -0.72 0.92" euler="0.15 0 0" material="orange_chair_mat"/>
+                    <geom name="ch03_back_support" type="cylinder" size="0.04 0.48" pos="0.0 -0.64 0.48" euler="0.2 0 0" material="chair_base_mat"/>
+                </body>
+            </body>
+        </body>
+        
+        <!-- CH04 - 椅子4 (右前方电脑工作台) -->
+        <body name="chair_04" pos="8.0 6.0 0.0">
+            <geom name="ch04_base" type="cylinder" size="1.0 0.06" pos="0.0 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch04_spoke_1" type="box" size="0.8 0.06 0.03" pos="0.4 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch04_spoke_2" type="box" size="0.8 0.06 0.03" pos="-0.248 0.7 0.06" euler="0 0 1.257" material="chair_base_mat"/>
+            <geom name="ch04_spoke_3" type="box" size="0.8 0.06 0.03" pos="-0.648 0.472 0.06" euler="0 0 2.513" material="chair_base_mat"/>
+            <geom name="ch04_spoke_4" type="box" size="0.8 0.06 0.03" pos="-0.648 -0.472 0.06" euler="0 0 3.77" material="chair_base_mat"/>
+            <geom name="ch04_spoke_5" type="box" size="0.8 0.06 0.03" pos="-0.248 -0.7 0.06" euler="0 0 5.026" material="chair_base_mat"/>
+            <geom name="ch04_wheel_1" type="sphere" size="0.1" pos="0.88 0.0 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch04_wheel_2" type="sphere" size="0.1" pos="-0.272 0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch04_wheel_3" type="sphere" size="0.1" pos="-0.712 0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch04_wheel_4" type="sphere" size="0.1" pos="-0.712 -0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch04_wheel_5" type="sphere" size="0.1" pos="-0.272 -0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <body name="ch04_lift" pos="0.0 0.0 0.2">
+                <joint name="ch04_height" type="slide" axis="0 0 1" range="0.0 0.3" damping="5"/>
+                <geom name="ch04_gas_cylinder" type="cylinder" size="0.1 0.7" pos="0.0 0.0 0.7" material="chair_base_mat"/>
+                <body name="ch04_seat_body" pos="0.0 0.0 1.4">
+                    <joint name="ch04_rotate" type="hinge" axis="0 0 1" damping="0.5"/>
+                    <geom name="ch04_seat" type="cylinder" size="0.8 0.16" pos="0.0 0.0 0.16" material="orange_chair_mat"/>
+                    <geom name="ch04_backrest" type="box" size="0.7 0.08 0.6" pos="0.0 -0.72 0.92" euler="0.15 0 0" material="orange_chair_mat"/>
+                    <geom name="ch04_back_support" type="cylinder" size="0.04 0.48" pos="0.0 -0.64 0.48" euler="0.2 0 0" material="chair_base_mat"/>
+                </body>
+            </body>
+        </body>
+        
+        <!-- CH05 - 椅子5 (右侧实验台旁) -->
+        <body name="chair_05" pos="11.2 3.2 0.0">
+            <geom name="ch05_base" type="cylinder" size="1.0 0.06" pos="0.0 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch05_spoke_1" type="box" size="0.8 0.06 0.03" pos="0.4 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch05_spoke_2" type="box" size="0.8 0.06 0.03" pos="-0.248 0.7 0.06" euler="0 0 1.257" material="chair_base_mat"/>
+            <geom name="ch05_spoke_3" type="box" size="0.8 0.06 0.03" pos="-0.648 0.472 0.06" euler="0 0 2.513" material="chair_base_mat"/>
+            <geom name="ch05_spoke_4" type="box" size="0.8 0.06 0.03" pos="-0.648 -0.472 0.06" euler="0 0 3.77" material="chair_base_mat"/>
+            <geom name="ch05_spoke_5" type="box" size="0.8 0.06 0.03" pos="-0.248 -0.7 0.06" euler="0 0 5.026" material="chair_base_mat"/>
+            <geom name="ch05_wheel_1" type="sphere" size="0.1" pos="0.88 0.0 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch05_wheel_2" type="sphere" size="0.1" pos="-0.272 0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch05_wheel_3" type="sphere" size="0.1" pos="-0.712 0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch05_wheel_4" type="sphere" size="0.1" pos="-0.712 -0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch05_wheel_5" type="sphere" size="0.1" pos="-0.272 -0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <body name="ch05_lift" pos="0.0 0.0 0.2">
+                <joint name="ch05_height" type="slide" axis="0 0 1" range="0.0 0.3" damping="5"/>
+                <geom name="ch05_gas_cylinder" type="cylinder" size="0.1 0.7" pos="0.0 0.0 0.7" material="chair_base_mat"/>
+                <body name="ch05_seat_body" pos="0.0 0.0 1.4">
+                    <joint name="ch05_rotate" type="hinge" axis="0 0 1" damping="0.5"/>
+                    <geom name="ch05_seat" type="cylinder" size="0.8 0.16" pos="0.0 0.0 0.16" material="orange_chair_mat"/>
+                    <geom name="ch05_backrest" type="box" size="0.7 0.08 0.6" pos="0.0 -0.72 0.92" euler="0.15 0 0" material="orange_chair_mat"/>
+                    <geom name="ch05_back_support" type="cylinder" size="0.04 0.48" pos="0.0 -0.64 0.48" euler="0.2 0 0" material="chair_base_mat"/>
+                </body>
+            </body>
+        </body>
+        
+        <!-- CH06 - 椅子6 (右前角) -->
+        <body name="chair_06" pos="12.0 8.0 0.0">
+            <geom name="ch06_base" type="cylinder" size="1.0 0.06" pos="0.0 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch06_spoke_1" type="box" size="0.8 0.06 0.03" pos="0.4 0.0 0.06" material="chair_base_mat"/>
+            <geom name="ch06_spoke_2" type="box" size="0.8 0.06 0.03" pos="-0.248 0.7 0.06" euler="0 0 1.257" material="chair_base_mat"/>
+            <geom name="ch06_spoke_3" type="box" size="0.8 0.06 0.03" pos="-0.648 0.472 0.06" euler="0 0 2.513" material="chair_base_mat"/>
+            <geom name="ch06_spoke_4" type="box" size="0.8 0.06 0.03" pos="-0.648 -0.472 0.06" euler="0 0 3.77" material="chair_base_mat"/>
+            <geom name="ch06_spoke_5" type="box" size="0.8 0.06 0.03" pos="-0.248 -0.7 0.06" euler="0 0 5.026" material="chair_base_mat"/>
+            <geom name="ch06_wheel_1" type="sphere" size="0.1" pos="0.88 0.0 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch06_wheel_2" type="sphere" size="0.1" pos="-0.272 0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch06_wheel_3" type="sphere" size="0.1" pos="-0.712 0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch06_wheel_4" type="sphere" size="0.1" pos="-0.712 -0.516 0.1" rgba="0.25 0.25 0.25 1"/>
+            <geom name="ch06_wheel_5" type="sphere" size="0.1" pos="-0.272 -0.836 0.1" rgba="0.25 0.25 0.25 1"/>
+            <body name="ch06_lift" pos="0.0 0.0 0.2">
+                <joint name="ch06_height" type="slide" axis="0 0 1" range="0.0 0.3" damping="5"/>
+                <geom name="ch06_gas_cylinder" type="cylinder" size="0.1 0.7" pos="0.0 0.0 0.7" material="chair_base_mat"/>
+                <body name="ch06_seat_body" pos="0.0 0.0 1.4">
+                    <joint name="ch06_rotate" type="hinge" axis="0 0 1" damping="0.5"/>
+                    <geom name="ch06_seat" type="cylinder" size="0.8 0.16" pos="0.0 0.0 0.16" material="orange_chair_mat"/>
+                    <geom name="ch06_backrest" type="box" size="0.7 0.08 0.6" pos="0.0 -0.72 0.92" euler="0.15 0 0" material="orange_chair_mat"/>
+                    <geom name="ch06_back_support" type="cylinder" size="0.04 0.48" pos="0.0 -0.64 0.48" euler="0.2 0 0" material="chair_base_mat"/>
+                </body>
+            </body>
+        </body>
+        
+        <!-- ===== 电脑设备 ===== -->
+        
+        <!-- PC01 - 台式显示器 -->
+        <body name="computer_monitor" pos="8.8 6.6 3.2">
+            <!-- 底座 -->
+            <geom name="pc01_base" type="box" size="0.5 0.36 0.03" pos="0.0 0.0 0.03" material="display_black_mat"/>
+            <!-- 支撑杆 -->
+            <geom name="pc01_stand" type="box" size="0.12 0.04 0.16" pos="0.0 0.0 0.22" material="display_black_mat"/>
+            <!-- 屏幕 -->
+            <geom name="pc01_frame" type="box" size="1.04 0.03 0.64" pos="0.0 -0.06 0.68" euler="0.087 0 0" material="display_black_mat"/>
+            <!-- 屏幕显示区 -->
+            <geom name="pc01_screen" type="box" size="0.96 0.02 0.56" pos="0.0 -0.08 0.68" euler="0.087 0 0" rgba="0.08 0.08 0.10 1"/>
+        </body>
+        
+        <!-- PC02 - 电脑主机 -->
+        <body name="computer_case" pos="10.0 7.6 0.8">
+            <geom name="pc02_case" type="box" size="0.36 0.84 0.8" material="display_black_mat"/>
+            <!-- 前面板 -->
+            <geom name="pc02_front" type="box" size="0.34 0.02 0.76" pos="0.0 0.86 0.0" rgba="0.15 0.15 0.17 1"/>
+            <!-- 电源按钮 -->
+            <geom name="pc02_power_btn" type="cylinder" size="0.032 0.012" pos="0.0 0.88 0.6" euler="1.57 0 0" rgba="0.2 0.6 0.9 0.8"/>
+        </body>
+        
+        <!-- PC03 - 键盘 -->
+        <body name="keyboard" pos="8.4 6.0 3.06">
+            <!-- 键盘主体 -->
+            <geom name="pc03_body" type="box" size="0.88 0.28 0.05" material="display_black_mat"/>
+            <!-- 按键区(简化表示) -->
+            <geom name="pc03_keys" type="box" size="0.76 0.22 0.02" pos="0.0 0.0 0.07" rgba="0.22 0.22 0.24 1"/>
+        </body>
+        
+        <!-- PC04 - 笔记本电脑(中央岛台上) -->
+        <body name="laptop" pos="0.0 -1.2 3.8">
+            <!-- 底座/键盘部分 -->
+            <geom name="pc04_base" type="box" size="0.64 0.44 0.024" rgba="0.72 0.72 0.74 1"/>
+            <!-- 键盘区 -->
+            <geom name="pc04_keyboard" type="box" size="0.52 0.2 0.008" pos="0.0 -0.08 0.032" rgba="0.20 0.20 0.22 1"/>
+            <!-- 触控板 -->
+            <geom name="pc04_touchpad" type="box" size="0.2 0.12 0.004" pos="0.0 0.2 0.032" rgba="0.65 0.65 0.67 1"/>
+            
+            <!-- 屏幕(打开约110°) -->
+            <geom name="pc04_screen_frame" type="box" size="0.6 0.01 0.4" pos="0.0 -0.54 0.464" euler="0.35 0 0" rgba="0.12 0.12 0.14 1"/>
+            <geom name="pc04_screen" type="box" size="0.56 0.008 0.36" pos="0.0 -0.552 0.464" euler="0.35 0 0" rgba="0.15 0.16 0.18 1"/>
+        </body>
+        
+        <!-- ===== 实验容器 ===== -->
+        
+        <!-- 中央岛台上的烧杯组 -->
+        <body name="beakers_group" pos="-2.0 -0.8 3.8">
+            <!-- 烧杯1 -->
+            <geom name="beaker_1_glass" type="cylinder" size="0.14 0.2" material="glass_clear_mat"/>
+            <geom name="beaker_1_liquid" type="cylinder" size="0.132 0.12" pos="0.0 0.0 -0.06" material="liquid_blue_mat"/>
+            <!-- 烧杯2 -->
+            <geom name="beaker_2_glass" type="cylinder" size="0.11 0.16" pos="0.4 0.0 0.0" material="glass_clear_mat"/>
+            <!-- 玻璃搅拌棒 -->
+            <geom name="stir_rod" type="cylinder" size="0.01 0.24" pos="0.2 0.0 0.24" material="glass_clear_mat"/>
+        </body>
+        
+        <!-- 锥形瓶 -->
+        <body name="flask_conical" pos="-0.6 0.4 3.8">
+            <!-- 底部圆锥 -->
+            <geom name="flask_bottom" type="sphere" size="0.16" pos="0.0 0.0 0.16" material="glass_clear_mat"/>
+            <geom name="flask_body" type="cylinder" size="0.16 0.24" pos="0.0 0.0 0.44" material="glass_clear_mat"/>
+            <!-- 颈部 -->
+            <geom name="flask_neck" type="cylinder" size="0.05 0.12" pos="0.0 0.0 0.8" material="glass_clear_mat"/>
+        </body>
+        
+        <!-- T02台面蓝色液体烧杯(搅拌器上) -->
+        <body name="beaker_on_stirrer" pos="-11.6 -2.8 4.04">
+            <geom name="beaker_stir_glass" type="cylinder" size="0.14 0.2" material="glass_clear_mat"/>
+            <geom name="beaker_stir_liquid" type="cylinder" size="0.132 0.16" pos="0.0 0.0 -0.02" material="liquid_blue_mat"/>
+        </body>
+        
+        <!-- 培养皿组 -->
+        <body name="petri_dishes" pos="-10.4 -2.0 3.72">
+            <geom name="petri_1" type="cylinder" size="0.18 0.03" rgba="0.92 0.92 0.94 0.55"/>
+            <geom name="petri_2" type="cylinder" size="0.18 0.03" pos="0.4 0.0 0.0" rgba="0.92 0.92 0.94 0.55"/>
+            <geom name="petri_3" type="cylinder" size="0.18 0.03" pos="0.2 0.36 0.0" rgba="0.92 0.92 0.94 0.55"/>
+        </body>
+        
+        <!-- 量筒 -->
+        <body name="graduated_cylinder" pos="1.6 -2.0 3.8">
+            <geom name="cylinder_glass" type="cylinder" size="0.1 0.5" material="glass_clear_mat"/>
+            <!-- 刻度线(简化表示) -->
+            <geom name="cylinder_marking" type="cylinder" size="0.104 0.004" pos="0.0 0.0 0.32" rgba="0.1 0.1 0.1 1"/>
+            <geom name="cylinder_marking_2" type="cylinder" size="0.104 0.004" pos="0.0 0.0 0.16" rgba="0.1 0.1 0.1 1"/>
+        </body>
+        
+        <!-- 试管架与试管 -->
+        <body name="test_tube_rack" pos="11.6 1.4 3.8">
+            <!-- 架子 -->
+            <geom name="rack_base" type="box" size="0.4 0.12 0.24" material="plastic_white_mat"/>
+            <!-- 试管 (8支) -->
+            <geom name="tube_1" type="cylinder" size="0.024 0.2" pos="-0.28 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+            <geom name="tube_2" type="cylinder" size="0.024 0.2" pos="-0.2 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+            <geom name="tube_3" type="cylinder" size="0.024 0.2" pos="-0.12 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+            <geom name="tube_4" type="cylinder" size="0.024 0.2" pos="-0.04 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+            <geom name="tube_5" type="cylinder" size="0.024 0.2" pos="0.04 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+            <geom name="tube_6" type="cylinder" size="0.024 0.2" pos="0.12 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+            <geom name="tube_7" type="cylinder" size="0.024 0.2" pos="0.2 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+            <geom name="tube_8" type="cylinder" size="0.024 0.2" pos="0.28 0.0 0.44" rgba="0.94 0.94 0.96 0.4"/>
+        </body>
+        
+        <!-- 移液器架 -->
+        <body name="pipette_rack" pos="12.6 0.8 3.8">
+            <!-- 底座 -->
+            <geom name="pip_base" type="cylinder" size="0.2 0.04" rgba="0.85 0.85 0.85 1"/>
+            <!-- 立柱 -->
+            <geom name="pip_stand" type="cylinder" size="0.04 0.4" pos="0.0 0.0 0.44" rgba="0.85 0.85 0.85 1"/>
+            <!-- 移液器 (3支) -->
+            <geom name="pipette_1" type="cylinder" size="0.02 0.32" pos="-0.12 0.0 0.72" rgba="0.9 0.9 0.9 1"/>
+            <geom name="pipette_2" type="cylinder" size="0.02 0.32" pos="0.0 0.0 0.72" rgba="0.9 0.9 0.9 1"/>
+            <geom name="pipette_3" type="cylinder" size="0.02 0.32" pos="0.12 0.0 0.72" rgba="0.9 0.9 0.9 1"/>
+        </body>
+        
+        <!-- 洗瓶 -->
+        <body name="wash_bottle" pos="-10.8 -1.6 3.8">
+            <geom name="wash_bottle_body" type="cylinder" size="0.16 0.36" rgba="0.95 0.95 0.97 0.75"/>
+            <!-- 弯嘴 -->
+            <geom name="wash_bottle_spout" type="box" size="0.012 0.2 0.012" pos="0.16 0.0 0.48" euler="0 0.8 0" rgba="0.95 0.95 0.97 0.75"/>
+        </body>
+        
+        <!-- ===== 其他设施 ===== -->
+        
+        <!-- O01 - 垃圾桶 -->
+        <body name="trash_bin" pos="-2.0 8.8 1.0">
+            <geom name="bin_body" type="cylinder" size="0.6 1.0" rgba="0.5 0.5 0.52 1"/>
+            <geom name="bin_rim" type="cylinder" size="0.64 0.04" pos="0.0 0.0 1.04" rgba="0.45 0.45 0.47 1"/>
+        </body>
+        
+        <!-- O02 - 灭火器 -->
+        <body name="fire_extinguisher" pos="14.8 9.2 1.0">
+            <geom name="extinguisher_body" type="cylinder" size="0.3 0.9" rgba="0.85 0.18 0.18 1"/>
+            <geom name="extinguisher_top" type="cylinder" size="0.16 0.12" pos="0.0 0.0 1.12" rgba="0.2 0.2 0.2 1"/>
+            <geom name="extinguisher_hose" type="box" size="0.04 0.32 0.04" pos="0.24 0.0 0.6" euler="0 0.5 0" rgba="0.15 0.15 0.15 1"/>
+        </body>
+        
+        <!-- O03 - 急救箱 -->
+        <body name="first_aid_box" pos="14.8 4.0 6.2">
+            <geom name="aid_box" type="box" size="0.6 0.2 0.5" rgba="0.95 0.95 0.95 1"/>
+            <!-- 红十字 -->
+            <geom name="aid_cross_h" type="box" size="0.32 0.02 0.06" pos="0.0 0.22 0.0" rgba="0.9 0.1 0.1 1"/>
+            <geom name="aid_cross_v" type="box" size="0.06 0.02 0.32" pos="0.0 0.22 0.0" rgba="0.9 0.1 0.1 1"/>
+        </body>
+        
+    </worldbody>
+    
+</mujoco>
