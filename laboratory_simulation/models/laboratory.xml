@@ -17,7 +17,7 @@
     <!-- 资源定义 - 纹理和材质 -->
     <asset>
         <!-- ===== 纹理定义 ===== -->
-        <texture name="floor_tex" type="2d" builtin="flat" rgb1="0.95 0.95 0.95" width="512" height="512"/>
+        <texture name="floor_texff" type="2d" builtin="flat" rgb1="0.95 0.95 0.95" width="512" height="512"/>
         <texture name="wall_tex" type="2d" builtin="flat" rgb1="0.92 0.92 0.92" width="512" height="512"/>
         <texture name="metal_tex" type="2d" builtin="gradient" rgb1="0.78 0.78 0.80" rgb2="0.72 0.72 0.74" width="256" height="256"/>
         
