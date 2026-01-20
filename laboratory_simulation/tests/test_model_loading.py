@@ -69,6 +69,11 @@ try:
             print(f"  - {jnt_name}")
     if model.njnt > 10:
         print(f"  ... 还有 {model.njnt-10} 个关节")
+
+    for i in range(model.nmat):
+        mat_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_MATERIAL, i)
+        if mat_name:
+            print(f"  - {mat_name}")
     
     # 列出材质
     print("\n材质列表:")
