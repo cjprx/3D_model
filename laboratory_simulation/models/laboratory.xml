@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mujoco model="science_laboratory">
     
-    <!-- 编译器设置 -->
+    <!-- 编译器设置 fafaf-->
     <compiler angle="radian" coordinate="local" inertiafromgeom="true"/>
     
     <!-- 仿真选项 -->
