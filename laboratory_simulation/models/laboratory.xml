@@ -4,7 +4,7 @@
     <!-- 编译器设置 -->
     <compiler angle="radian" coordinate="local" inertiafromgeom="true"/>
     
-    <!-- 仿真选项 -->
+    <!-- 仿真选项fadfaf  -->
     <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
     
     <!-- 视觉设置 -->
