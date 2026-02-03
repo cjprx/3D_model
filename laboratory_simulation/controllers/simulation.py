@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Dict, List, Tuple
 import time
+from typing import Optional, Dict, List, Tuple
+import time
 
 
 class DeviceState(Enum):
